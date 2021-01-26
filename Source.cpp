@@ -26,46 +26,6 @@ void InsertToTree(Node*& pRoot, Node* pNew)
 		InsertToTree(pRoot->pRight, pNew);
 }
 
-void DeleteNodeWithTwoChildren(Node*& q, Node*& p)
-{
-	if (p->pRight)
-	{
-		DeleteNodeWithTwoChildren(q, p->pRight);
-		return;
-	}
-
-	p->i = q->i;
-	q = p;
-	p = p->pLeft;
-}
-
-void DeleteNodeFromTree(Node*& pRoot, int i)
-{
-	if (!pRoot)
-		return;
-
-	if (pRoot->i < i)
-	{
-		DeleteNodeFromTree(pRoot->pRight, i);
-		return;
-	}
-
-	if (pRoot->i > i)
-	{
-		DeleteNodeFromTree(pRoot->pLeft, i);
-		return;
-	}
-
-	Node* q = pRoot;
-	if (!q->pRight)
-		pRoot = q->pLeft;
-	else if (!q->pLeft)
-		pRoot = q->pRight;
-	else
-		DeleteNodeWithTwoChildren(q, q->pLeft);
-
-	delete q;
-}
 
 void PrintTree(Node* pRoot, int Level)
 {
@@ -81,42 +41,54 @@ void PrintTree(Node* pRoot, int Level)
 	PrintTree(pRoot->pLeft, Level + 1);
 }
 
-void Insert(Node*& pRoot, Node* pNewNode)
-{
-	if (!pRoot)
-		pRoot = pNewNode;
-	else
-	{
-		if (pNewNode->i < pRoot->i)
-			Insert(pRoot->pLeft, pNewNode);
-		else
-			Insert(pRoot->pRight, pNewNode);
-	}
-}
-vector<int> branch;
-vector<vector<int>> branches;
 
 
-
-int FindMaxSum(Node* pRoot) {
-	if (pRoot == nullptr)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int FindMaxSum(Node* pRoot) { // finds the maxium sum of branches from the root node by checking
+	if (pRoot == nullptr)			//  every child node's left and right sums and returing the bigger one.
 	{
 		return 0;
 	}
-    int leftsum=0;
-    int rightsum=0;
+	int leftsum = 0;
+	int rightsum = 0;
 
-    leftsum = FindMaxSum(pRoot->pLeft);
-    rightsum = FindMaxSum(pRoot->pRight);
+	leftsum = FindMaxSum(pRoot->pLeft);
+	rightsum = FindMaxSum(pRoot->pRight);
 
-    if (leftsum < rightsum) {
-
-            return rightsum + pRoot->i; }
-
-    else {
-            return leftsum + pRoot->i; }
+	if (leftsum < rightsum) { return rightsum + pRoot->i; }
+	else { return leftsum + pRoot->i; }
+}
+vector<int> MaxBranch; /// keeps the max branch
+bool FindTheMaxBranch(Node* pRoot, int maxsum) { // finds the nodes of the branch with maximum sum
+		if (maxsum == 0) { ///checks if there is a branch that sums up to the max sum
+			return 1;   
+		}
+		if (pRoot == nullptr) { 
+			return 0; 
+		}
+		
+		bool leftside = FindTheMaxBranch(pRoot->pLeft, maxsum - pRoot->i); //removes node values from the sum value
+																		
+		bool rightside = FindTheMaxBranch(pRoot->pRight, maxsum - pRoot->i);//removes node values from the sum value
+		
+		if ((leftside || rightside)) { MaxBranch.push_back(pRoot->i); }
+		
+		return leftside || rightside; // if one sum become 0, means that the branch to that node is the maxsum branch
+									  // this value returns 1, recursive function records the nodes in this branch to the MaxBranch vector
+									  // via the condition at the upper row(74).
 }
 
+
+void PrintMaxSumBranchandItsSum(Node* pRoot) { // Prints results.
+	FindTheMaxBranch(pRoot, FindMaxSum(pRoot));
+	cout << "Branch with the largest sum is:";
+	for (int i = 0; i < MaxBranch.size(); i++) {
+		cout << MaxBranch[i] << " ";
+	}
+	cout << "-> SUM= ";
+
+	cout << FindMaxSum(pRoot);
+}
 
 
 
@@ -136,7 +108,8 @@ int main()
 	}
 
 	PrintTree(pRoot, 1);
-	cout<<FindMaxSum(pRoot)<<endl;
+
+	PrintMaxSumBranchandItsSum(pRoot);
 
 
 
